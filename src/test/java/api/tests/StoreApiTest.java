@@ -261,8 +261,10 @@ public void SingleStore_Details_api_validation() {
                 "Countries should not be empty.");
     }
 
+    
     softAssert.assertAll();
 }
+
 
 
 }

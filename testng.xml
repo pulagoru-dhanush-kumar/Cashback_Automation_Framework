@@ -11,6 +11,7 @@
            <class name="api.tests.CategoriesApiTest"/>
             <class name="api.tests.StoreApiTest"/>
              <class name="api.tests.SearchTest"/>
+              <class name="api.tests.HistoryApiTest"/>
 
             <class name="tests.AllCategoriesTest"/>
             <class name="tests.HomePageTests"/>
