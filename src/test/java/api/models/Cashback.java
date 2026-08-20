@@ -1,9 +1,9 @@
 package api.models;
 
 public class Cashback {
-    private Double pending;
-    private Double Confirmed;
-    private Double declined;
+    private Double pending=0.0;
+    private Double Confirmed=0.0;
+    private Double declined=0.0;
 
 
     public Double getPending() {
