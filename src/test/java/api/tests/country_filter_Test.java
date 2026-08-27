@@ -53,6 +53,4 @@ for (Integer storeId : us_store_ids) {
 return false;
 }
 
-
-
 }

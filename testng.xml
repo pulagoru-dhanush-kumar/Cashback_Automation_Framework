@@ -16,6 +16,7 @@
             <class name="tests.AllCategoriesTest"/>
             <class name="tests.HomePageTests"/>
             <class name="tests.TotalEarningsTests"/>
+            <class name="api.tests.country_filter_Test"/>
           
         </classes>
     </test>
