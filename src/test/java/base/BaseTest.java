@@ -69,7 +69,6 @@
 // }
 
 // }
-
 package base;
 
 import com.microsoft.playwright.*;
@@ -94,7 +93,6 @@ public class BaseTest {
     protected final String BASE_URL = "https://shopping.santabrowser.com/?uuid=2da68a9dd8c5a73";
     // "https://shopping.santabrowser.com/?uuid=8da91acc7b09930";
 
-    // Headless in CI (GitHub Actions sets CI=true automatically), headed+slow locally so you can watch it.
     private static final boolean IS_CI = "true".equalsIgnoreCase(System.getenv("CI"));
     private static final boolean HEADLESS = Boolean.parseBoolean(
             System.getProperty("headless", String.valueOf(IS_CI))
@@ -121,11 +119,12 @@ public class BaseTest {
         browser = playwright.chromium().launch(launchOptions);
         context = browser.newContext(contextOptions);
 
-        // Force India catalog/content on every request, regardless of the runner's real IP —
-        // mirrors the header your working REST API tests already send successfully.
-        context.route("**/*", route -> {
+        // Default new/unspecified requests to India, but never override a country-code
+        // the app has already set explicitly (e.g. when a test switches the filter to US).
+        // Scoped to the API host only — no need to touch static assets/images/analytics calls.
+        context.route("https://cbapi.santabrowser.com/**", route -> {
             Map<String, String> headers = new HashMap<>(route.request().headers());
-            headers.put("country-code", "IN");
+            headers.putIfAbsent("country-code", "IN");
             route.resume(new Route.ResumeOptions().setHeaders(headers));
         });
 
