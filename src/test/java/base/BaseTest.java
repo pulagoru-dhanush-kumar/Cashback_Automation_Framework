@@ -70,7 +70,6 @@
 
 // }
 
-
 package base;
 
 import com.microsoft.playwright.*;
@@ -78,7 +77,12 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class BaseTest {
 
@@ -91,7 +95,6 @@ public class BaseTest {
     // "https://shopping.santabrowser.com/?uuid=8da91acc7b09930";
 
     // Headless in CI (GitHub Actions sets CI=true automatically), headed+slow locally so you can watch it.
-    // Override explicitly with -Dheadless=true or -Dheadless=false if you ever need to force it.
     private static final boolean IS_CI = "true".equalsIgnoreCase(System.getenv("CI"));
     private static final boolean HEADLESS = Boolean.parseBoolean(
             System.getProperty("headless", String.valueOf(IS_CI))
@@ -108,7 +111,6 @@ public class BaseTest {
         Browser.NewContextOptions contextOptions = new Browser.NewContextOptions();
 
         if (HEADLESS) {
-            // No real display in CI, so give the context a fixed viewport instead of null.
             contextOptions.setViewportSize(1366, 768);
         } else {
             launchOptions.setSlowMo(1000);
@@ -118,6 +120,15 @@ public class BaseTest {
 
         browser = playwright.chromium().launch(launchOptions);
         context = browser.newContext(contextOptions);
+
+        // Force India catalog/content on every request, regardless of the runner's real IP —
+        // mirrors the header your working REST API tests already send successfully.
+        context.route("**/*", route -> {
+            Map<String, String> headers = new HashMap<>(route.request().headers());
+            headers.put("country-code", "IN");
+            route.resume(new Route.ResumeOptions().setHeaders(headers));
+        });
+
         page = context.newPage();
 
         System.out.println("Browser launched (headless=" + HEADLESS + ")");
@@ -127,6 +138,16 @@ public class BaseTest {
     public void openCashback() {
         System.out.println("Opening Cashback Home Page");
         page.navigate(BASE_URL);
+
+        if (HEADLESS) {
+            try {
+                Files.createDirectories(Paths.get("target/screenshots"));
+                String fileName = "target/screenshots/" + this.getClass().getSimpleName() + "-homepage.png";
+                page.screenshot(new Page.ScreenshotOptions().setPath(Paths.get(fileName)));
+            } catch (IOException e) {
+                System.out.println("Could not save debug screenshot: " + e.getMessage());
+            }
+        }
     }
 
     @AfterClass
