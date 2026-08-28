@@ -31,6 +31,14 @@ jobs:
       - name: Run tests
         run: mvn -B test
 
+      - name: Upload debug screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-debug-screenshots
+          path: target/screenshots/*.png
+          if-no-files-found: warn
+
       - name: Upload Surefire reports
         if: always()
         uses: actions/upload-artifact@v4
