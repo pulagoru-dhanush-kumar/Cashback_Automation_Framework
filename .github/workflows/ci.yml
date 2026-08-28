@@ -1,5 +1,4 @@
 name: CI
-
 on:
   push:
     branches: [ main ]
@@ -8,12 +7,15 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Windows, X64]
 
     steps:
+
+      # 1. Checkout source code
       - name: Checkout code
         uses: actions/checkout@v5
 
+      # 2. Setup Java 17
       - name: Set up JDK
         uses: actions/setup-java@v5
         with:
@@ -21,16 +23,23 @@ jobs:
           java-version: '17'
           cache: 'maven'
 
-      - name: Install Playwright browsers
+      # 3. Check environment
+      - name: Check environment
         run: |
-          npx -y @playwright/test install chromium --with-deps
+          java -version
+          mvn -version
+          node --version
+          npm --version
 
+      # 4. Build project without executing tests
       - name: Build with Maven
         run: mvn -B clean install -DskipTests
 
-      - name: Run tests
-        run: mvn -B test
+      # 5. Run tests with visible Playwright browser
+      - name: Run tests with visible browser
+        run: mvn -B test -Dheadless=false
 
+      # 6. Upload screenshots
       - name: Upload debug screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -39,6 +48,7 @@ jobs:
           path: target/screenshots/*.png
           if-no-files-found: warn
 
+      # 7. Upload Surefire reports
       - name: Upload Surefire reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -47,6 +57,7 @@ jobs:
           path: target/surefire-reports/
           if-no-files-found: warn
 
+      # 8. Upload Allure results
       - name: Upload Allure results
         if: always()
         uses: actions/upload-artifact@v4
